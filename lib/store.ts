@@ -11,6 +11,7 @@ export interface Task {
   estimatedMinutes?: number;
   completed: boolean;
   inToday: boolean;
+  dueDate?: string; // ISO date string: "2026-06-07"
   createdAt: number;
   notes?: string;
   subtasks?: Subtask[];
@@ -51,4 +52,23 @@ export function updateTask(id: string, patch: Partial<Task>): void {
 export function deleteTask(id: string): void {
   const tasks = getTasks().filter((t) => t.id !== id);
   saveTasks(tasks);
+}
+
+export function todayISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function formatDueDate(iso: string): string {
+  const today = todayISO();
+  const tomorrow = (() => {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  if (iso === today) return "Сьогодні";
+  if (iso === tomorrow) return "Завтра";
+  const [year, month, day] = iso.split("-");
+  const months = ["січ", "лют", "бер", "квіт", "трав", "черв", "лип", "серп", "вер", "жовт", "лист", "груд"];
+  const label = `${parseInt(day)} ${months[parseInt(month) - 1]}`;
+  return parseInt(year) !== new Date().getFullYear() ? `${label} ${year}` : label;
 }

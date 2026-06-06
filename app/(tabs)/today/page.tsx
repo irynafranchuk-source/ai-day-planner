@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getTasks, updateTask, Task } from "@/lib/store";
+import { getTasks, updateTask, Task, todayISO } from "@/lib/store";
 
 const UKRAINIAN_DAYS = [
   "Нд",
@@ -41,7 +41,8 @@ export default function TodayPage() {
   const today = formatDate(new Date());
 
   useEffect(() => {
-    setTasks(getTasks().filter((t) => t.inToday));
+    const today = todayISO();
+    setTasks(getTasks().filter((t) => t.inToday || t.dueDate === today));
   }, []);
 
   const completed = tasks.filter((t) => t.completed).length;

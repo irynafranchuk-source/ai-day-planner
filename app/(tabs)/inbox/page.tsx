@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getTasks, updateTask, deleteTask, Task } from "@/lib/store";
+import { getTasks, updateTask, deleteTask, Task, todayISO, formatDueDate } from "@/lib/store";
+import DateSheet from "@/components/DateSheet";
 
 const priorityColors: Record<Task["priority"], string> = {
   high: "#FD3433",
@@ -18,15 +19,18 @@ const priorityLabels: Record<Task["priority"], string> = {
 
 export default function InboxPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [dateSheetFor, setDateSheetFor] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    setTasks(getTasks().filter((t) => !t.inToday));
+    setTasks(getTasks().filter((t) => !t.dueDate && !t.inToday));
   }, []);
 
-  const moveToToday = (id: string) => {
-    updateTask(id, { inToday: true });
-    setTasks((prev) => prev.filter((t) => t.id !== id));
+  const assignDate = (taskId: string, date: string) => {
+    const isToday = date === todayISO();
+    updateTask(taskId, { dueDate: date, inToday: isToday });
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    setDateSheetFor(null);
   };
 
   const remove = (id: string) => {
@@ -37,7 +41,7 @@ export default function InboxPage() {
   return (
     <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-5">
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-medium tracking-tight" style={{ color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
+        <h1 className="text-2xl font-medium" style={{ color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
           Вхідні
         </h1>
         {tasks.length > 0 && (
@@ -50,7 +54,8 @@ export default function InboxPage() {
 
       {tasks.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 gap-4 pb-8">
-          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+            stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
             <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
           </svg>
@@ -66,10 +71,12 @@ export default function InboxPage() {
           {tasks.map((task) => (
             <div key={task.id} className="rounded-2xl p-4"
               style={{ backgroundColor: "#3B404C", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <button className="w-full text-left" onClick={() => router.push(`/task/${task.id}`)}>
+
+              <button className="w-full text-left mb-2" onClick={() => router.push(`/task/${task.id}`)}>
                 <p className="text-base font-medium" style={{ color: "rgba(255,255,255,0.95)" }}>{task.text}</p>
               </button>
-              <div className="flex gap-2 mt-2 mb-3 flex-wrap">
+
+              <div className="flex gap-2 mb-3 flex-wrap">
                 <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                   style={{ backgroundColor: `${priorityColors[task.priority]}22`, color: priorityColors[task.priority] }}>
                   {priorityLabels[task.priority]}
@@ -81,19 +88,21 @@ export default function InboxPage() {
                   </span>
                 )}
               </div>
+
               <div className="flex gap-2">
                 <button
-                  onClick={() => moveToToday(task.id)}
-                  className="flex-1 h-10 text-sm font-medium text-white transition-all active:scale-95"
+                  onClick={() => setDateSheetFor(task.id)}
+                  className="flex-1 h-10 text-sm font-medium text-white transition-all active:scale-95 flex items-center justify-center gap-2"
                   style={{ backgroundColor: "#FD3433", borderRadius: 10 }}
                 >
-                  + На сьогодні
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Призначити дату
                 </button>
-                <button
-                  onClick={() => remove(task.id)}
+                <button onClick={() => remove(task.id)}
                   className="w-10 h-10 flex items-center justify-center transition-all active:scale-95"
-                  style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 10 }}
-                >
+                  style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 10 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -104,6 +113,13 @@ export default function InboxPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {dateSheetFor && (
+        <DateSheet
+          onSelect={(date) => assignDate(dateSheetFor, date)}
+          onClose={() => setDateSheetFor(null)}
+        />
       )}
     </div>
   );

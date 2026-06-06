@@ -2,7 +2,8 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { getTask, updateTask, deleteTask, Task, Subtask } from "@/lib/store";
+import { getTask, updateTask, deleteTask, Task, Subtask, todayISO, formatDueDate } from "@/lib/store";
+import DateSheet from "@/components/DateSheet";
 
 const priorityOptions: { value: Task["priority"]; label: string; color: string }[] = [
   { value: "high", label: "Висока", color: "#FD3433" },
@@ -20,6 +21,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [estimatedMinutes, setEstimatedMinutes] = useState("");
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtask, setNewSubtask] = useState("");
+  const [showDateSheet, setShowDateSheet] = useState(false);
 
   useEffect(() => {
     const t = getTask(id);
@@ -72,6 +74,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
   if (!task) return null;
 
+  const assignDate = (date: string) => {
+    const isToday = date === todayISO();
+    save({ dueDate: date, inToday: isToday });
+    setShowDateSheet(false);
+  };
+
   const cardStyle = { backgroundColor: "#3B404C", borderRadius: 16, border: "1px solid rgba(255,255,255,0.06)" };
   const labelStyle = { color: "rgba(255,255,255,0.40)", fontSize: "0.75rem", marginBottom: 8, fontWeight: 500 };
 
@@ -121,6 +129,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="p-4" style={cardStyle}>
+          <p style={labelStyle}>Дата виконання</p>
+          <button onClick={() => setShowDateSheet(true)} className="w-full text-left transition-all active:scale-[0.98]">
+            <p className="text-base font-medium"
+              style={{ color: task.dueDate ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)" }}>
+              {task.dueDate ? formatDueDate(task.dueDate) : "Не призначено"}
+            </p>
+          </button>
         </div>
 
         <div className="p-4" style={cardStyle}>
@@ -185,5 +203,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
     </div>
+
+    {showDateSheet && (
+      <DateSheet onSelect={assignDate} onClose={() => setShowDateSheet(false)} />
+    )}
   );
 }
