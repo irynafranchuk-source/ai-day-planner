@@ -99,10 +99,10 @@ export default function TodayPage() {
           </svg>
           <div className="text-center">
             <p className="text-white font-medium text-lg">
-              Перетягни задачі з Вхідних
+              Немає задач на сьогодні
             </p>
             <p className="text-sm mt-1" style={{ color: "#6b7280" }}>
-              Сплануй свій день
+              Додай задачі з Вхідних
             </p>
           </div>
         </div>
