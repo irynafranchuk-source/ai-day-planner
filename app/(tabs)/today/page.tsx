@@ -2,47 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getTasks, updateTask, Task, todayISO } from "@/lib/store";
+import { getTasks, updateTask, Task, todayISO, formatDueDate } from "@/lib/store";
+import DateSheet from "@/components/DateSheet";
 
-const UKRAINIAN_DAYS = [
-  "Нд",
-  "Пн",
-  "Вт",
-  "Ср",
-  "Чт",
-  "Пт",
-  "Сб",
-];
-
-const UKRAINIAN_MONTHS = [
-  "січня",
-  "лютого",
-  "березня",
-  "квітня",
-  "травня",
-  "червня",
-  "липня",
-  "серпня",
-  "вересня",
-  "жовтня",
-  "листопада",
-  "грудня",
-];
+const UKRAINIAN_DAYS = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+const UKRAINIAN_MONTHS = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
 
 function formatDate(date: Date): string {
-  const day = UKRAINIAN_DAYS[date.getDay()];
-  const month = UKRAINIAN_MONTHS[date.getMonth()];
-  return `${day}, ${date.getDate()} ${month}`;
+  return `${UKRAINIAN_DAYS[date.getDay()]}, ${date.getDate()} ${UKRAINIAN_MONTHS[date.getMonth()]}`;
 }
 
 export default function TodayPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [dateSheetFor, setDateSheetFor] = useState<string | null>(null);
   const router = useRouter();
   const today = formatDate(new Date());
 
   useEffect(() => {
-    const today = todayISO();
-    setTasks(getTasks().filter((t) => t.inToday || t.dueDate === today));
+    const iso = todayISO();
+    setTasks(getTasks().filter((t) => t.inToday || t.dueDate === iso));
   }, []);
 
   const completed = tasks.filter((t) => t.completed).length;
@@ -51,9 +29,16 @@ export default function TodayPage() {
 
   const toggle = (id: string, current: boolean) => {
     updateTask(id, { completed: !current });
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !current } : t))
-    );
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !current } : t)));
+  };
+
+  const reassignDate = (taskId: string, date: string) => {
+    const isToday = date === todayISO();
+    updateTask(taskId, { dueDate: date, inToday: isToday });
+    if (!isToday) {
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    }
+    setDateSheetFor(null);
   };
 
   return (
@@ -88,27 +73,49 @@ export default function TodayPage() {
       {tasks.length > 0 && (
         <div className="flex flex-col gap-3 overflow-y-auto pb-4">
           {tasks.map((task) => (
-            <div key={task.id} className="flex items-center gap-3 p-4 transition-all"
+            <div key={task.id} className="p-4 transition-all"
               style={{ backgroundColor: "#3B404C", borderRadius: 16, border: "1px solid rgba(255,255,255,0.06)" }}>
-              <button onClick={() => toggle(task.id, task.completed)} className="flex-shrink-0">
-                <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
-                  style={{ borderColor: task.completed ? "#FD3433" : "rgba(255,255,255,0.25)", backgroundColor: task.completed ? "#FD3433" : "transparent" }}>
-                  {task.completed && (
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="2 5 4 7 8 3" />
-                    </svg>
-                  )}
-                </div>
-              </button>
-              <button onClick={() => router.push(`/task/${task.id}`)} className="flex-1 text-left">
-                <span className="text-base transition-all"
-                  style={{ color: task.completed ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.95)", textDecoration: task.completed ? "line-through" : "none" }}>
-                  {task.text}
+              <div className="flex items-center gap-3">
+                <button onClick={() => toggle(task.id, task.completed)} className="flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                    style={{ borderColor: task.completed ? "#FD3433" : "rgba(255,255,255,0.25)", backgroundColor: task.completed ? "#FD3433" : "transparent" }}>
+                    {task.completed && (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="2 5 4 7 8 3" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+                <button onClick={() => router.push(`/task/${task.id}`)} className="flex-1 text-left">
+                  <span className="text-base transition-all"
+                    style={{ color: task.completed ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.95)", textDecoration: task.completed ? "line-through" : "none" }}>
+                    {task.text}
+                  </span>
+                </button>
+              </div>
+
+              {/* Date badge */}
+              <button
+                onClick={() => setDateSheetFor(task.id)}
+                className="flex items-center gap-1.5 mt-2 ml-8 transition-all active:scale-95"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  {task.dueDate ? formatDueDate(task.dueDate) : "Сьогодні"} · змінити
                 </span>
               </button>
             </div>
           ))}
         </div>
+      )}
+
+      {dateSheetFor && (
+        <DateSheet
+          onSelect={(date) => reassignDate(dateSheetFor, date)}
+          onClose={() => setDateSheetFor(null)}
+        />
       )}
     </div>
   );
