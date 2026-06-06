@@ -85,7 +85,7 @@ export default function CapturePage() {
   const startRecording = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("SpeechRecognition не знайдено в цьому браузері"); return; }
+    if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
     recognition.lang = "uk-UA";
@@ -112,7 +112,7 @@ export default function CapturePage() {
       localStorage.setItem(STORAGE_KEY, newText);
     };
 
-    recognition.onerror = (e: unknown) => { alert("Помилка мікрофона: " + JSON.stringify(e)); stopRecording(); };
+    recognition.onerror = () => stopRecording();
     recognition.onend = () => {
       // Safari зупиняє запис після паузи — перезапускаємо якщо ще активний
       if (recognitionRef.current) {
