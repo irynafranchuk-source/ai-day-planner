@@ -1,3 +1,9 @@
+export interface Subtask {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   text: string;
@@ -6,6 +12,8 @@ export interface Task {
   completed: boolean;
   inToday: boolean;
   createdAt: number;
+  notes?: string;
+  subtasks?: Subtask[];
 }
 
 const STORAGE_KEY = "ai-day-planner-tasks";
@@ -29,6 +37,10 @@ export function addTask(task: Task): void {
   const tasks = getTasks();
   tasks.push(task);
   saveTasks(tasks);
+}
+
+export function getTask(id: string): Task | undefined {
+  return getTasks().find((t) => t.id === id);
 }
 
 export function updateTask(id: string, patch: Partial<Task>): void {

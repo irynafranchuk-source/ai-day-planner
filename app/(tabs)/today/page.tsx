@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getTasks, updateTask, Task } from "@/lib/store";
 
 const UKRAINIAN_DAYS = [
@@ -36,6 +37,7 @@ function formatDate(date: Date): string {
 
 export default function TodayPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const router = useRouter();
   const today = formatDate(new Date());
 
   useEffect(() => {
@@ -112,12 +114,12 @@ export default function TodayPage() {
       {tasks.length > 0 && (
         <div className="flex flex-col gap-3 overflow-y-auto">
           {tasks.map((task) => (
-            <button
+            <div
               key={task.id}
-              onClick={() => toggle(task.id, task.completed)}
-              className="flex items-start gap-3 rounded-2xl p-4 text-left transition-all active:scale-[0.98]"
+              className="flex items-start gap-3 rounded-2xl p-4 transition-all"
               style={{ backgroundColor: "#1a1a1a" }}
             >
+              <button onClick={() => toggle(task.id, task.completed)} className="mt-0.5 flex-shrink-0">
               <div
                 className="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
                 style={{
@@ -140,16 +142,19 @@ export default function TodayPage() {
                   </svg>
                 )}
               </div>
-              <span
-                className="text-base transition-all"
-                style={{
-                  color: task.completed ? "#6b7280" : "white",
-                  textDecoration: task.completed ? "line-through" : "none",
-                }}
-              >
-                {task.text}
-              </span>
-            </button>
+              </button>
+              <button onClick={() => router.push(`/task/${task.id}`)} className="flex-1 text-left">
+                <span
+                  className="text-base transition-all"
+                  style={{
+                    color: task.completed ? "#6b7280" : "white",
+                    textDecoration: task.completed ? "line-through" : "none",
+                  }}
+                >
+                  {task.text}
+                </span>
+              </button>
+            </div>
           ))}
         </div>
       )}

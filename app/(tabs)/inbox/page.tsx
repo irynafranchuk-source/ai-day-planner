@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getTasks, updateTask, deleteTask, Task } from "@/lib/store";
 
 const priorityColors: Record<Task["priority"], string> = {
@@ -17,6 +18,7 @@ const priorityLabels: Record<Task["priority"], string> = {
 
 export default function InboxPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     setTasks(getTasks().filter((t) => !t.inToday));
@@ -61,7 +63,9 @@ export default function InboxPage() {
         <div className="flex flex-col gap-3 overflow-y-auto pb-4">
           {tasks.map((task) => (
             <div key={task.id} className="rounded-2xl p-4" style={{ backgroundColor: "#1a1a1a" }}>
-              <p className="text-white text-base">{task.text}</p>
+              <button className="w-full text-left" onClick={() => router.push(`/task/${task.id}`)}>
+                <p className="text-white text-base">{task.text}</p>
+              </button>
               <div className="flex gap-2 mt-2 mb-3">
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-medium"
