@@ -37,10 +37,7 @@ export default function CapturePage() {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setText(saved);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    setSpeechSupported(!!SpeechRecognition);
+    setSpeechSupported(true); // завжди показуємо кнопку, перевіряємо при натисканні
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
