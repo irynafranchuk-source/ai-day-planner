@@ -82,8 +82,7 @@ export default function CapturePage() {
   const startRecording = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
-    alert(`SR: ${!!w.SpeechRecognition}, wSR: ${!!w.webkitSpeechRecognition}`);
-    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
+    const SpeechRecognition = w.webkitSpeechRecognition || w.SpeechRecognition;
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
