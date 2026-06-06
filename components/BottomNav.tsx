@@ -61,7 +61,7 @@ const CalendarCheckIcon = () => (
 const tabs = [
   { href: "/capture", label: "Capture", Icon: MicIcon },
   { href: "/inbox", label: "Вхідні", Icon: InboxIcon },
-  { href: "/today", label: "Сьогодні", Icon: CalendarCheckIcon },
+  { href: "/today", label: "Календар", Icon: CalendarCheckIcon },
 ];
 
 export default function BottomNav() {
