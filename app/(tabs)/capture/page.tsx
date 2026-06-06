@@ -113,7 +113,14 @@ export default function CapturePage() {
     };
 
     recognition.onerror = () => stopRecording();
-    recognition.onend = () => setIsRecording(false);
+    recognition.onend = () => {
+      // Safari зупиняє запис після паузи — перезапускаємо якщо ще активний
+      if (recognitionRef.current) {
+        try { recognitionRef.current.start(); } catch { setIsRecording(false); }
+      } else {
+        setIsRecording(false);
+      }
+    };
 
     recognitionRef.current = recognition;
     recognition.start();
