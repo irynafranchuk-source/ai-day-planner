@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { addTask } from "@/lib/store";
 
 const MicIcon = ({ size = 32 }: { size?: number }) => (
   <svg
@@ -25,7 +27,9 @@ const STORAGE_KEY = "ai-day-planner-capture-text";
 export default function CapturePage() {
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -44,10 +48,35 @@ export default function CapturePage() {
     localStorage.setItem(STORAGE_KEY, e.target.value);
   };
 
-  const handleAnalyze = () => {
-    alert("Скоро тут буде AI ✨");
-    setText("");
-    localStorage.removeItem(STORAGE_KEY);
+  const handleAnalyze = async () => {
+    if (!text.trim() || isLoading) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const { tasks } = await res.json();
+      tasks.forEach((t: { text: string; priority: "high" | "medium" | "low"; estimatedMinutes?: number }) =>
+        addTask({
+          id: crypto.randomUUID(),
+          text: t.text,
+          priority: t.priority ?? "medium",
+          estimatedMinutes: t.estimatedMinutes ?? undefined,
+          completed: false,
+          inToday: false,
+          createdAt: Date.now(),
+        })
+      );
+      setText("");
+      localStorage.removeItem(STORAGE_KEY);
+      router.push("/inbox");
+    } catch {
+      alert("Помилка. Перевір інтернет і спробуй ще раз.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const startRecording = () => {
@@ -144,10 +173,11 @@ export default function CapturePage() {
 
       <button
         onClick={handleAnalyze}
-        className="w-full mt-4 h-14 text-lg font-semibold rounded-2xl text-white transition-all active:scale-[0.98]"
+        disabled={isLoading || !text.trim()}
+        className="w-full mt-4 h-14 text-lg font-semibold rounded-2xl text-white transition-all active:scale-[0.98] disabled:opacity-50"
         style={{ backgroundColor: "#6366f1" }}
       >
-        Розібрати
+        {isLoading ? "Розбираю..." : "Розібрати"}
       </button>
     </div>
   );
