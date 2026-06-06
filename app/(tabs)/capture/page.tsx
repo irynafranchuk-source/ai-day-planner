@@ -25,11 +25,17 @@ const STORAGE_KEY = "ai-day-planner-capture-text";
 export default function CapturePage() {
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setText(saved);
+
+    const SpeechRecognition =
+      window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+    setSpeechSupported(!!SpeechRecognition);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -43,12 +49,59 @@ export default function CapturePage() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const startRecording = () => setIsRecording(true);
-  const stopRecording = () => setIsRecording(false);
+  const startRecording = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "uk-UA";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let baseText = text;
+
+    recognition.onresult = (event) => {
+      let interim = "";
+      let final = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript + " ";
+        } else {
+          interim += transcript;
+        }
+      }
+      if (final) baseText += final;
+      const newText = baseText + interim;
+      setText(newText);
+      localStorage.setItem(STORAGE_KEY, newText);
+    };
+
+    recognition.onerror = () => stopRecording();
+    recognition.onend = () => setIsRecording(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setIsRecording(false);
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
 
   return (
     <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-4 pb-4">
-      {/* Header */}
       <h1
         className="text-center text-sm font-medium mb-4"
         style={{ color: "#9ca3af" }}
@@ -56,7 +109,6 @@ export default function CapturePage() {
         AI Планер
       </h1>
 
-      {/* Textarea */}
       <textarea
         ref={textareaRef}
         value={text}
@@ -66,30 +118,28 @@ export default function CapturePage() {
         style={{ backgroundColor: "#1a1a1a" }}
       />
 
-      {/* Mic button */}
       <div className="flex flex-col items-center gap-3 mt-4">
         <button
-          onMouseDown={startRecording}
-          onMouseUp={stopRecording}
-          onMouseLeave={stopRecording}
-          onTouchStart={startRecording}
-          onTouchEnd={stopRecording}
+          onClick={toggleRecording}
           className={`flex items-center justify-center rounded-full transition-all active:scale-95 ${isRecording ? "recording-pulse" : ""}`}
           style={{
             width: 80,
             height: 80,
             backgroundColor: isRecording ? "#dc2626" : "#6366f1",
           }}
-          aria-label="Записати голос"
+          aria-label={isRecording ? "Зупинити запис" : "Записати голос"}
         >
           <MicIcon size={32} />
         </button>
         <p className="text-xs" style={{ color: "#6b7280" }}>
-          або просто друкуй
+          {!speechSupported
+            ? "Голос не підтримується в цьому браузері"
+            : isRecording
+            ? "Говори… натисни ще раз щоб зупинити"
+            : "або просто друкуй"}
         </p>
       </div>
 
-      {/* Analyze button */}
       <button
         onClick={handleAnalyze}
         className="w-full mt-4 h-14 text-lg font-semibold rounded-2xl text-white transition-all active:scale-[0.98]"
@@ -97,7 +147,6 @@ export default function CapturePage() {
       >
         Розібрати
       </button>
-
     </div>
   );
 }
