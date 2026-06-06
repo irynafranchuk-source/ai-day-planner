@@ -62,7 +62,8 @@ export default function CapturePage() {
 
     let baseText = text;
 
-    recognition.onresult = (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
       let interim = "";
       let final = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
