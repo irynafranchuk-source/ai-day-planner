@@ -202,10 +202,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
       </div>
+      {showDateSheet && (
+        <DateSheet onSelect={assignDate} onClose={() => setShowDateSheet(false)} />
+      )}
     </div>
-
-    {showDateSheet && (
-      <DateSheet onSelect={assignDate} onClose={() => setShowDateSheet(false)} />
-    )}
   );
 }
