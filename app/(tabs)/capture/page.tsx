@@ -140,50 +140,52 @@ export default function CapturePage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-4 pb-4">
-      <h1
-        className="text-center text-sm font-medium mb-4"
-        style={{ color: "#9ca3af" }}
-      >
+    <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-5 pb-4">
+      <p className="text-center text-xs font-medium mb-4 tracking-wide uppercase"
+        style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>
         AI Планер
-      </h1>
+      </p>
 
       <textarea
         ref={textareaRef}
         value={text}
         onChange={handleChange}
         placeholder="Що в голові?"
-        className="flex-1 w-full text-xl p-4 rounded-2xl resize-none outline-none text-white placeholder:text-gray-600"
-        style={{ backgroundColor: "#1a1a1a" }}
+        className="flex-1 w-full text-lg p-4 resize-none outline-none"
+        style={{
+          backgroundColor: "#3B404C",
+          color: "rgba(255,255,255,0.95)",
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.06)",
+          caretColor: "#FD3433",
+        }}
       />
 
-      <div className="flex flex-col items-center gap-3 mt-4">
+      <div className="flex flex-col items-center gap-2 mt-4">
         <button
           onClick={toggleRecording}
           className={`flex items-center justify-center rounded-full transition-all active:scale-95 ${isRecording ? "recording-pulse" : ""}`}
           style={{
-            width: 80,
-            height: 80,
-            backgroundColor: isRecording ? "#dc2626" : "#6366f1",
+            width: 72,
+            height: 72,
+            backgroundColor: isRecording ? "#FD3433" : "rgba(253,52,51,0.15)",
+            border: `2px solid ${isRecording ? "#FD3433" : "rgba(253,52,51,0.4)"}`,
+            color: isRecording ? "#fff" : "#FD3433",
           }}
           aria-label={isRecording ? "Зупинити запис" : "Записати голос"}
         >
-          <MicIcon size={32} />
+          <MicIcon size={28} />
         </button>
-        <p className="text-xs" style={{ color: "#6b7280" }}>
-          {!speechSupported
-            ? "Голос не підтримується в цьому браузері"
-            : isRecording
-            ? "Говори… натисни ще раз щоб зупинити"
-            : "або просто друкуй"}
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+          {isRecording ? "Говори… натисни ще раз щоб зупинити" : "або просто друкуй"}
         </p>
       </div>
 
       <button
         onClick={handleAnalyze}
         disabled={isLoading || !text.trim()}
-        className="w-full mt-4 h-14 text-lg font-semibold rounded-2xl text-white transition-all active:scale-[0.98] disabled:opacity-50"
-        style={{ backgroundColor: "#6366f1" }}
+        className="w-full mt-4 h-14 text-base font-medium text-white transition-all active:scale-[0.98] disabled:opacity-40"
+        style={{ backgroundColor: "#FD3433", borderRadius: 12 }}
       >
         {isLoading ? "Розбираю..." : "Розібрати"}
       </button>

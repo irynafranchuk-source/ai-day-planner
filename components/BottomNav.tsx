@@ -71,18 +71,18 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex"
       style={{
-        backgroundColor: "#1a1a1a",
-        borderTop: "1px solid #2a2a2a",
+        backgroundColor: "#1C2030",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}
     >
       {tabs.map(({ href, label, Icon }) => {
-        const isActive = pathname === href;
+        const isActive = pathname.startsWith(href);
         return (
           <Link
             key={href}
             href={href}
-            className="flex flex-1 flex-col items-center justify-center gap-1 min-h-[64px] transition-colors"
-            style={{ color: isActive ? "#6366f1" : "#9ca3af" }}
+            className="flex flex-1 flex-col items-center justify-center gap-1 min-h-[64px] transition-all active:scale-95"
+            style={{ color: isActive ? "#FD3433" : "rgba(255,255,255,0.40)" }}
           >
             <Icon />
             <span className="text-xs font-medium">{label}</span>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getTasks, updateTask, deleteTask, Task } from "@/lib/store";
 
 const priorityColors: Record<Task["priority"], string> = {
-  high: "#ef4444",
+  high: "#FD3433",
   medium: "#f59e0b",
   low: "#22c55e",
 };
@@ -35,26 +35,28 @@ export default function InboxPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-4">
-      <div className="flex items-center gap-2 mb-6">
-        <h1 className="text-2xl font-bold text-white">Вхідні</h1>
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{ backgroundColor: "#2a2a2a", color: "#9ca3af" }}
-        >
-          {tasks.length}
-        </span>
+    <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-5">
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-2xl font-medium tracking-tight" style={{ color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em" }}>
+          Вхідні
+        </h1>
+        {tasks.length > 0 && (
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: "#FD3433", color: "#fff" }}>
+            {tasks.length}
+          </span>
+        )}
       </div>
 
       {tasks.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 gap-4 pb-8">
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4b5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
             <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
           </svg>
           <div className="text-center">
-            <p className="text-white font-medium text-lg">Тут з&apos;являться твої задачі</p>
-            <p className="text-sm mt-1" style={{ color: "#6b7280" }}>Продиктуй або напиши на екрані Capture</p>
+            <p className="font-medium text-base" style={{ color: "rgba(255,255,255,0.70)" }}>Тут з&apos;являться твої задачі</p>
+            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Продиктуй або напиши на Capture</p>
           </div>
         </div>
       )}
@@ -62,19 +64,19 @@ export default function InboxPage() {
       {tasks.length > 0 && (
         <div className="flex flex-col gap-3 overflow-y-auto pb-4">
           {tasks.map((task) => (
-            <div key={task.id} className="rounded-2xl p-4" style={{ backgroundColor: "#1a1a1a" }}>
+            <div key={task.id} className="rounded-2xl p-4"
+              style={{ backgroundColor: "#3B404C", border: "1px solid rgba(255,255,255,0.06)" }}>
               <button className="w-full text-left" onClick={() => router.push(`/task/${task.id}`)}>
-                <p className="text-white text-base">{task.text}</p>
+                <p className="text-base font-medium" style={{ color: "rgba(255,255,255,0.95)" }}>{task.text}</p>
               </button>
-              <div className="flex gap-2 mt-2 mb-3">
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={{ backgroundColor: `${priorityColors[task.priority]}22`, color: priorityColors[task.priority] }}
-                >
+              <div className="flex gap-2 mt-2 mb-3 flex-wrap">
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={{ backgroundColor: `${priorityColors[task.priority]}22`, color: priorityColors[task.priority] }}>
                   {priorityLabels[task.priority]}
                 </span>
                 {task.estimatedMinutes && (
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "#2a2a2a", color: "#9ca3af" }}>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ backgroundColor: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.55)" }}>
                     {task.estimatedMinutes} хв
                   </span>
                 )}
@@ -82,17 +84,17 @@ export default function InboxPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => moveToToday(task.id)}
-                  className="flex-1 h-10 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
-                  style={{ backgroundColor: "#6366f1" }}
+                  className="flex-1 h-10 text-sm font-medium text-white transition-all active:scale-95"
+                  style={{ backgroundColor: "#FD3433", borderRadius: 10 }}
                 >
                   + На сьогодні
                 </button>
                 <button
                   onClick={() => remove(task.id)}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
-                  style={{ backgroundColor: "#2a2a2a" }}
+                  className="w-10 h-10 flex items-center justify-center transition-all active:scale-95"
+                  style={{ backgroundColor: "rgba(255,255,255,0.07)", borderRadius: 10 }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                     <path d="M10 11v6M14 11v6" />
