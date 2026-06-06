@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { addTask } from "@/lib/store";
 
 const MicIcon = ({ size = 32 }: { size?: number }) => (
@@ -30,6 +31,7 @@ export default function CapturePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -141,10 +143,24 @@ export default function CapturePage() {
 
   return (
     <div className="flex flex-col h-[calc(100svh-64px)] px-4 pt-5 pb-4">
-      <p className="text-center text-xs font-medium mb-4 tracking-wide uppercase"
-        style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>
-        AI Планер
-      </p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs font-medium uppercase tracking-widest"
+          style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>AI Планер</p>
+        {session?.user && (
+          <button onClick={() => signOut({ callbackUrl: "/login" })}
+            className="flex items-center gap-2 active:scale-95 transition-all">
+            {session.user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />
+            ) : (
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium"
+                style={{ backgroundColor: "#FD3433", color: "#fff" }}>
+                {session.user.name?.[0] ?? "?"}
+              </div>
+            )}
+          </button>
+        )}
+      </div>
 
       <textarea
         ref={textareaRef}

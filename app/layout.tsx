@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import SessionProvider from "@/components/SessionProvider";
 
 export const metadata: Metadata = {
   title: "AI Планер",
@@ -20,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uk" className="h-full">
-      <body className="h-full">{children}</body>
+      <body className="h-full">
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }
