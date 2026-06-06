@@ -57,7 +57,9 @@ export default function CapturePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      const { tasks } = await res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Server error");
+      const { tasks } = data;
       tasks.forEach((t: { text: string; priority: "high" | "medium" | "low"; estimatedMinutes?: number }) =>
         addTask({
           id: crypto.randomUUID(),
@@ -72,8 +74,9 @@ export default function CapturePage() {
       setText("");
       localStorage.removeItem(STORAGE_KEY);
       router.push("/inbox");
-    } catch {
-      alert("Помилка. Перевір інтернет і спробуй ще раз.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Невідома помилка";
+      alert("Помилка: " + msg);
     } finally {
       setIsLoading(false);
     }

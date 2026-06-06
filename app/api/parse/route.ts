@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const client = new Anthropic();
 
 export async function POST(req: NextRequest) {
+  try {
   const { text } = await req.json();
 
   if (!text?.trim()) {
@@ -44,4 +45,9 @@ export async function POST(req: NextRequest) {
   const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
 
   return NextResponse.json({ tasks: parsed });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Parse error:", msg);
+    return NextResponse.json({ error: msg, tasks: [] }, { status: 500 });
+  }
 }
